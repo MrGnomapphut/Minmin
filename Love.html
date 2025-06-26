@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ขอเป็นแฟน 🥰</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0;
+      overflow: hidden;
+      background: #111;
+      font-family: 'Sarabun', sans-serif;
+    }
+    #canvas {
+      position: absolute;
+      top: 0; left: 0;
+    }
+    #letter {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%; max-width: 400px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      font-size: 18px;
+      color: #333;
+      opacity: 0;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    #boy {
+      position: absolute;
+      bottom: 10px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      animation: float 2s ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes float {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div id="letter"></div>
+<img id="boy" src="https://png.pngtree.com/png-vector/20250516/ourmid/pngtree-sweet-teddy-bear-carrying-flower-bouquet-png-image_16298013.png" alt="boy holding flower">
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = window.innerWidth;
+let H = canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+});
+
+// วาดหัวใจด้วยพารามิเตอร์ t 0→1
+function drawHeart(t){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.translate(W/2, H/2);
+  ctx.beginPath();
+  for(let i=0; i<=200; i++){
+    const p = i/200 * Math.PI * 2;
+    const r = 150;
+    const x = r*16*Math.pow(Math.sin(p),3);
+    const y = -r*(13*Math.cos(p)-5*Math.cos(2*p)-2*Math.cos(3*p)-Math.cos(4*p));
+    if(i===0) ctx.moveTo(x*t, y*t);
+    else ctx.lineTo(x*t, y*t);
+  }
+  ctx.closePath();
+  ctx.fillStyle = `rgba(255,${100+155*t},${150+105*t},${t})`;
+  ctx.fill();
+  ctx.restore();
+}
+
+let t = 0, stage = 0;
+function animate(){
+  if(stage===0){
+    t += 0.01;
+    drawHeart(t);
+    if(t>=1){
+      stage = 1;
+      setTimeout(showLetter, 500);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+// พอกำหนด stage=1 จะแสดงกระดาษ + typing + boy + heart particles
+const letter = document.getElementById('letter');
+const boy = document.getElementById('boy');
+const msg = `ถึงคนที่น่ารักที่สุดของเค้า 🥰\n\nเค้าอยากจะขออ้วนเป็น... “แฟน” ของเค้า\n\nถ้าเธอยอมรับ เค้าอยากให้อ้วนเข้ามมาในชีวิต ทั้งวันที่มีสีสัน และวันที่ไม่สดใส\n\nอ้วนจะยอมรับเค้าเป็นแฟนไหมคั๊บบบ? 💕`;
+
+function showLetter(){
+  letter.style.opacity = 1;
+  boy.style.opacity = 1;
+  typeMessage(letter, msg, 50);
+  startHearts();
+}
+
+function typeMessage(el, text, speed){
+  let i=0;
+  function type(){
+    if(i<text.length){
+      el.textContent += text.charAt(i);
+      i++;
+      setTimeout(type, speed);
+    }
+  }
+  type();
+}
+
+// heart particle effect
+let hearts = [];
+function startHearts(){
+  for(let i=0;i<150;i++){
+    hearts.push({
+      x: Math.random()*W,
+      y: H + Math.random()*200,
+      size: 5+Math.random()*15,
+      speed: 1+Math.random()*3,
+      alpha: 0.5+Math.random()*0.5
+    });
+  }
+  requestAnimationFrame(animateHearts);
+}
+
+function animateHearts(){
+  ctx.clearRect(0,0,W,H);
+  hearts.forEach(h => {
+    h.y -= h.speed;
+    h.x += Math.sin(h.y*0.01)*2;
+    if(h.y< -50) h.y = H + Math.random()*200;
+    ctx.fillStyle = `rgba(255,${100+Math.random()*155},${150+Math.random()*105},${h.alpha})`;
+    ctx.beginPath();
+    ctx.moveTo(h.x, h.y);
+    ctx.arc(h.x, h.y, h.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  requestAnimationFrame(animateHearts);
+}
+</script>
+
+</body>
+</html>
